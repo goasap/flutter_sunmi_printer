@@ -31,7 +31,7 @@ class SunmiPrinter {
   static const String PRINT_IMAGE = "printImage";
   static const String CUT_PAPER = "cutPaper";
   static const double paperWidth = 382;
-  static const double _textScale = 1.7;
+  static const double _textScale = 2;
 
   static const MethodChannel _channel =
       const MethodChannel('flutter_sunmi_printer');
@@ -158,11 +158,12 @@ class SunmiPrinter {
     canvas.drawLine(const Offset(0, 5), const Offset(paperWidth, 5), linePaint);
 
     final picture = recorder.endRecording();
-    await _printImage(picture, 10);
+    await _printImage(PrinterCustomWidget(picture: picture, height: 10));
   }
 
-  static Future<void> _printImage(Picture picture, int height) async {
-    final img = await (await picture.toImage(paperWidth.toInt(), height))
+  static Future<void> _printImage(PrinterCustomWidget customImage) async {
+    final img = await (await customImage.picture
+            .toImage(paperWidth.toInt(), customImage.height))
         .toByteData(format: ImageByteFormat.png);
 
     Uint8List imageUint8List =
@@ -173,7 +174,7 @@ class SunmiPrinter {
     image(imageString);
   }
 
-  static Future<void> printCustomText(PrinterCustomText customPrint) async {
+  static PrinterCustomWidget customText(PrinterCustomText customPrint) {
     final TextPainter textPainter = TextPainter(
         text: customPrint.text,
         textAlign: customPrint.textAlign,
@@ -193,11 +194,11 @@ class SunmiPrinter {
     textPainter.paint(canvas, const Offset(0, 0));
 
     final picture = recorder.endRecording();
-    _printImage(picture, height.toInt());
+    return PrinterCustomWidget(picture: picture, height: height.toInt());
   }
 
-  static Future<void> printColumnLayoutText(
-      List<SunmiCustomTextColumn> columns, int padding) async {
+  static PrinterCustomWidget columnLayoutText(
+      List<SunmiCustomTextColumn> columns, int padding) {
     assert(columns.isNotEmpty);
     final List<TextPainter> painters = [];
     final int sumFlexs =
@@ -237,7 +238,31 @@ class SunmiPrinter {
     }
 
     final picture = recorder.endRecording();
-    _printImage(picture, maxHeight);
+
+    return PrinterCustomWidget(picture: picture, height: maxHeight);
+  }
+
+  static Future<void> printCustomText(PrinterCustomText customPrint) async {
+    _printImage(customText(customPrint));
+  }
+
+  static Future<void> printColumnLayoutText(
+      List<SunmiCustomTextColumn> columns, int padding) async {
+    _printImage(columnLayoutText(columns, padding));
+  }
+
+  static Future<void> printWidgets(List<PrinterCustomWidget> widgets) async {
+    final recorder = PictureRecorder();
+    final canvas = Canvas(recorder);
+    double sumHeight = 0;
+    for (var item in widgets) {
+      final image = await item.picture.toImage(paperWidth.toInt(), item.height);
+      canvas.drawImage(image, Offset(0, sumHeight), Paint());
+      sumHeight += item.height;
+    }
+    final picture = recorder.endRecording();
+    _printImage(
+        PrinterCustomWidget(picture: picture, height: sumHeight.toInt()));
   }
 
   static double _getVerticalPosition(
@@ -259,6 +284,15 @@ class PrinterCustomText {
   PrinterCustomText({
     required this.text,
     required this.textAlign,
+  });
+}
+
+class PrinterCustomWidget {
+  final Picture picture;
+  final int height;
+  PrinterCustomWidget({
+    required this.picture,
+    required this.height,
   });
 }
 

@@ -125,37 +125,40 @@ class _MyAppState extends State<MyApp> {
               )
             ]),
         textAlign: TextAlign.left));
-    await SunmiPrinter.printColumnLayoutText([
-      SunmiCustomTextColumn(
-          flex: 2,
-          text: PrinterCustomText(
-              text: TextSpan(
-                text: "2x Coca cola",
-                style: TextStyle(
-                    fontSize: scale * 12,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.black),
-              ),
-              textAlign: TextAlign.left)),
-      SunmiCustomTextColumn(
-          flex: 2,
-          text: PrinterCustomText(
-              text: TextSpan(
-                text: "\$ 2.00",
-                style: TextStyle(
-                    fontSize: scale * 12,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.black),
-              ),
-              textAlign: TextAlign.right))
-    ], 10);
-    await SunmiPrinter.printCustomText(PrinterCustomText(
-        text: TextSpan(
-          text: "•Bebida: Soda",
-          style: TextStyle(
-              fontSize: 10, fontWeight: FontWeight.w700, color: Colors.black),
-        ),
-        textAlign: TextAlign.left));
+    SunmiPrinter.printWidgets([
+      SunmiPrinter.columnLayoutText([
+        SunmiCustomTextColumn(
+            flex: 2,
+            text: PrinterCustomText(
+                text: TextSpan(
+                  text: "2x Coca cola",
+                  style: TextStyle(
+                      fontSize: scale * 12,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.black),
+                ),
+                textAlign: TextAlign.left)),
+        SunmiCustomTextColumn(
+            flex: 2,
+            text: PrinterCustomText(
+                text: TextSpan(
+                  text: "\$ 2.00",
+                  style: TextStyle(
+                      fontSize: scale * 12,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.black),
+                ),
+                textAlign: TextAlign.right))
+      ], 10),
+      SunmiPrinter.customText(PrinterCustomText(
+          text: TextSpan(
+            text: "•Bebida: Soda",
+            style: TextStyle(
+                fontSize: 10, fontWeight: FontWeight.w700, color: Colors.black),
+          ),
+          textAlign: TextAlign.left)),
+    ]);
+
     await SunmiPrinter.emptyLines(2);
     SunmiPrinter.cutPaper();
   }
