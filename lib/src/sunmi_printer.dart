@@ -30,7 +30,8 @@ class SunmiPrinter {
   static const String PRINT_ROW = "printRow";
   static const String PRINT_IMAGE = "printImage";
   static const String CUT_PAPER = "cutPaper";
-  static const double paperWidth = 400;
+  static const double paperWidth = 382;
+  static const double _textScale = 1.7;
 
   static const MethodChannel _channel =
       const MethodChannel('flutter_sunmi_printer');
@@ -161,7 +162,7 @@ class SunmiPrinter {
   }
 
   static Future<void> _printImage(Picture picture, int height) async {
-    final img = await (await picture.toImage(paperWidth.toInt(), height + 1))
+    final img = await (await picture.toImage(paperWidth.toInt(), height))
         .toByteData(format: ImageByteFormat.png);
 
     Uint8List imageUint8List =
@@ -176,8 +177,9 @@ class SunmiPrinter {
     final TextPainter textPainter = TextPainter(
         text: customPrint.text,
         textAlign: customPrint.textAlign,
-        textDirection: TextDirection.ltr)
-      ..layout(maxWidth: paperWidth);
+        textDirection: TextDirection.ltr,
+        textScaleFactor: _textScale)
+      ..layout(maxWidth: paperWidth, minWidth: paperWidth);
     final height = textPainter.height;
 
     final recorder = PictureRecorder();
@@ -207,7 +209,8 @@ class SunmiPrinter {
       final paint = TextPainter(
           text: column.text.text,
           textAlign: column.text.textAlign,
-          textDirection: TextDirection.ltr)
+          textDirection: TextDirection.ltr,
+          textScaleFactor: _textScale)
         ..layout(maxWidth: width, minWidth: width);
       painters.add(paint);
       if (maxHeight < paint.height) maxHeight = paint.height.toInt();
@@ -219,7 +222,7 @@ class SunmiPrinter {
       ..style = PaintingStyle.fill
       ..color = Colors.white;
     canvas.drawRect(
-        Rect.fromLTWH(0, 0, paperWidth, maxHeight + 1), paintBackground);
+        Rect.fromLTWH(0, 0, paperWidth, maxHeight.toDouble()), paintBackground);
     double actualPadding = 0;
     for (int i = 0; i < painters.length; i++) {
       painters[i].paint(

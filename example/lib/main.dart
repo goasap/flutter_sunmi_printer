@@ -68,23 +68,25 @@ class _MyAppState extends State<MyApp> {
   }
 
   void _customPrint() async {
+    // await SunmiPrinter.niceHr();
+    // ByteData bytes = await rootBundle.load('assets/rabbit_black.jpg');
+    // final buffer = bytes.buffer;
+    // final imgData = base64.encode(Uint8List.view(buffer));
+    // await SunmiPrinter.image(imgData);
+    final double scale = 1;
     await SunmiPrinter.niceHr();
-    ByteData bytes = await rootBundle.load('assets/rabbit_black.jpg');
-    final buffer = bytes.buffer;
-    final imgData = base64.encode(Uint8List.view(buffer));
-    await SunmiPrinter.image(imgData);
-    await SunmiPrinter.niceHr();
-    await SunmiPrinter.emptyLines(3);
     await SunmiPrinter.printCustomText(PrinterCustomText(
         text: TextSpan(
             text: "Cliente: ",
             style: TextStyle(
-                fontSize: 12, fontWeight: FontWeight.w400, color: Colors.black),
+                fontSize: scale * 12,
+                fontWeight: FontWeight.w400,
+                color: Colors.black),
             children: [
               TextSpan(
                 text: "Ali Buenaño",
                 style: TextStyle(
-                    fontSize: 12,
+                    fontSize: scale * 12,
                     fontWeight: FontWeight.w700,
                     color: Colors.black),
               )
@@ -94,8 +96,34 @@ class _MyAppState extends State<MyApp> {
         text: TextSpan(
           text: "ID 1651859",
           style: TextStyle(
-              fontSize: 16, fontWeight: FontWeight.w700, color: Colors.black),
+              fontSize: scale * 16,
+              fontWeight: FontWeight.w700,
+              color: Colors.black),
         ),
+        textAlign: TextAlign.left));
+    await SunmiPrinter.printCustomText(PrinterCustomText(
+        text: TextSpan(
+          text: "ID 1651859",
+          style: TextStyle(
+              fontSize: scale * 16,
+              fontWeight: FontWeight.w700,
+              color: Colors.black),
+        ),
+        textAlign: TextAlign.right));
+    await SunmiPrinter.printCustomText(PrinterCustomText(
+        text: TextSpan(
+            text: "Dirección:",
+            style: TextStyle(
+                fontSize: 12, fontWeight: FontWeight.w400, color: Colors.black),
+            children: [
+              TextSpan(
+                text: "Manzana 130407 99-10, Las Lajas, Panamá",
+                style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.black),
+              )
+            ]),
         textAlign: TextAlign.left));
     await SunmiPrinter.printColumnLayoutText([
       SunmiCustomTextColumn(
@@ -104,7 +132,7 @@ class _MyAppState extends State<MyApp> {
               text: TextSpan(
                 text: "2x Coca cola",
                 style: TextStyle(
-                    fontSize: 12,
+                    fontSize: scale * 12,
                     fontWeight: FontWeight.w700,
                     color: Colors.black),
               ),
@@ -115,19 +143,21 @@ class _MyAppState extends State<MyApp> {
               text: TextSpan(
                 text: "\$ 2.00",
                 style: TextStyle(
-                    fontSize: 12,
+                    fontSize: scale * 12,
                     fontWeight: FontWeight.w600,
                     color: Colors.black),
               ),
-              textAlign: TextAlign.left))
+              textAlign: TextAlign.right))
     ], 10);
     await SunmiPrinter.printCustomText(PrinterCustomText(
         text: TextSpan(
-          text: "* Bebida: Soda",
+          text: "•Bebida: Soda",
           style: TextStyle(
-              fontSize: 16, fontWeight: FontWeight.w700, color: Colors.black),
+              fontSize: 10, fontWeight: FontWeight.w700, color: Colors.black),
         ),
         textAlign: TextAlign.left));
+    await SunmiPrinter.emptyLines(2);
+    SunmiPrinter.cutPaper();
   }
 
   @override
@@ -155,6 +185,22 @@ class _MyAppState extends State<MyApp> {
                     onPressed: _customPrint,
                     child: const Text('Print demo 2',
                         style: TextStyle(fontSize: 20)),
+                  ),
+                  SizedBox(
+                    height: 20,
+                  ),
+                  RaisedButton(
+                    onPressed: () {
+                      SunmiPrinter.emptyLines(1);
+                    },
+                    child: const Text('Empty Line',
+                        style: TextStyle(fontSize: 20)),
+                  ),
+                  RaisedButton(
+                    onPressed: () {
+                      SunmiPrinter.cutPaper();
+                    },
+                    child: const Text('Crop', style: TextStyle(fontSize: 20)),
                   ),
                 ],
               ),
