@@ -8,6 +8,9 @@
 
 import 'dart:async';
 import 'dart:convert';
+import 'dart:typed_data';
+import 'dart:ui';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_sunmi_printer/src/enums.dart';
 import 'sunmi_col.dart';
@@ -27,6 +30,7 @@ class SunmiPrinter {
   static const String PRINT_ROW = "printRow";
   static const String PRINT_IMAGE = "printImage";
   static const String CUT_PAPER = "cutPaper";
+  static const double paperWidth = 400;
 
   static const MethodChannel _channel =
       const MethodChannel('flutter_sunmi_printer');
@@ -136,4 +140,131 @@ class SunmiPrinter {
   static Future<void> cutPaper() async {
     await _channel.invokeMethod(CUT_PAPER);
   }
+
+  //CUSTOM TEXT STYLE
+  static Future<void> niceHr() async {
+    final recorder = PictureRecorder();
+    final canvas = Canvas(recorder);
+
+    final paintBackground = Paint()
+      ..style = PaintingStyle.fill
+      ..color = const Color(0xFFFFFFFF);
+    canvas.drawRect(const Rect.fromLTWH(0, 0, paperWidth, 12), paintBackground);
+    final linePaint = Paint()
+      ..strokeWidth = 5
+      ..color = Colors.black;
+
+    canvas.drawLine(const Offset(0, 5), const Offset(paperWidth, 5), linePaint);
+
+    final picture = recorder.endRecording();
+    await _printImage(picture, 10);
+  }
+
+  static Future<void> _printImage(Picture picture, int height) async {
+    final img = await (await picture.toImage(paperWidth.toInt(), height + 1))
+        .toByteData(format: ImageByteFormat.png);
+
+    Uint8List imageUint8List =
+        img!.buffer.asUint8List(img.offsetInBytes, img.lengthInBytes);
+
+    List<int> imageListInt = imageUint8List.cast<int>();
+    String imageString = base64.encode(imageListInt);
+    image(imageString);
+  }
+
+  static Future<void> printCustomText(PrinterCustomText customPrint) async {
+    final TextPainter textPainter = TextPainter(
+        text: customPrint.text,
+        textAlign: customPrint.textAlign,
+        textDirection: TextDirection.ltr)
+      ..layout(maxWidth: paperWidth);
+    final height = textPainter.height;
+
+    final recorder = PictureRecorder();
+    final canvas = Canvas(recorder);
+    final paintBackground = Paint()
+      ..style = PaintingStyle.fill
+      ..color = Colors.white;
+    canvas.drawRect(
+        Rect.fromLTWH(0, 0, paperWidth, height + 1), paintBackground);
+
+    textPainter.paint(canvas, const Offset(0, 0));
+
+    final picture = recorder.endRecording();
+    _printImage(picture, height.toInt());
+  }
+
+  static Future<void> printColumnLayoutText(
+      List<SunmiCustomTextColumn> columns, int padding) async {
+    assert(columns.isNotEmpty);
+    final List<TextPainter> painters = [];
+    final int sumFlexs =
+        columns.map((e) => e.flex).toList().reduce((a, b) => a + b);
+    int maxHeight = 0;
+    for (var column in columns) {
+      final width =
+          column.flex * (paperWidth - padding * columns.length - 1) / sumFlexs;
+      final paint = TextPainter(
+          text: column.text.text,
+          textAlign: column.text.textAlign,
+          textDirection: TextDirection.ltr)
+        ..layout(maxWidth: width, minWidth: width);
+      painters.add(paint);
+      if (maxHeight < paint.height) maxHeight = paint.height.toInt();
+    }
+
+    final recorder = PictureRecorder();
+    final canvas = Canvas(recorder);
+    final paintBackground = Paint()
+      ..style = PaintingStyle.fill
+      ..color = Colors.white;
+    canvas.drawRect(
+        Rect.fromLTWH(0, 0, paperWidth, maxHeight + 1), paintBackground);
+    double actualPadding = 0;
+    for (int i = 0; i < painters.length; i++) {
+      painters[i].paint(
+          canvas,
+          Offset(
+              actualPadding + i * padding,
+              _getVerticalPosition(
+                  columns[i].align, painters[i].height, maxHeight.toDouble())));
+      actualPadding += columns[i].flex *
+          (paperWidth - padding * columns.length - 1) /
+          sumFlexs;
+    }
+
+    final picture = recorder.endRecording();
+    _printImage(picture, maxHeight);
+  }
+
+  static double _getVerticalPosition(
+      SunmiColAlign align, double height, double totalHeight) {
+    switch (align) {
+      case SunmiColAlign.top:
+        return 0;
+      case SunmiColAlign.center:
+        return (totalHeight / 2) - (height / 2);
+      case SunmiColAlign.bottom:
+        return totalHeight - height;
+    }
+  }
 }
+
+class PrinterCustomText {
+  final TextSpan text;
+  final TextAlign textAlign;
+  PrinterCustomText({
+    required this.text,
+    required this.textAlign,
+  });
+}
+
+class SunmiCustomTextColumn {
+  final PrinterCustomText text;
+  final int flex;
+  final SunmiColAlign align;
+  SunmiCustomTextColumn(
+      {required this.text, this.flex = 1, this.align = SunmiColAlign.top});
+}
+
+enum SunmiColAlign { top, center, bottom }

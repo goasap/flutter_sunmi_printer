@@ -67,6 +67,69 @@ class _MyAppState extends State<MyApp> {
     SunmiPrinter.cutPaper();
   }
 
+  void _customPrint() async {
+    await SunmiPrinter.niceHr();
+    ByteData bytes = await rootBundle.load('assets/rabbit_black.jpg');
+    final buffer = bytes.buffer;
+    final imgData = base64.encode(Uint8List.view(buffer));
+    await SunmiPrinter.image(imgData);
+    await SunmiPrinter.niceHr();
+    await SunmiPrinter.emptyLines(3);
+    await SunmiPrinter.printCustomText(PrinterCustomText(
+        text: TextSpan(
+            text: "Cliente: ",
+            style: TextStyle(
+                fontSize: 12, fontWeight: FontWeight.w400, color: Colors.black),
+            children: [
+              TextSpan(
+                text: "Ali Buenaño",
+                style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.black),
+              )
+            ]),
+        textAlign: TextAlign.left));
+    await SunmiPrinter.printCustomText(PrinterCustomText(
+        text: TextSpan(
+          text: "ID 1651859",
+          style: TextStyle(
+              fontSize: 16, fontWeight: FontWeight.w700, color: Colors.black),
+        ),
+        textAlign: TextAlign.left));
+    await SunmiPrinter.printColumnLayoutText([
+      SunmiCustomTextColumn(
+          flex: 2,
+          text: PrinterCustomText(
+              text: TextSpan(
+                text: "2x Coca cola",
+                style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.black),
+              ),
+              textAlign: TextAlign.left)),
+      SunmiCustomTextColumn(
+          flex: 2,
+          text: PrinterCustomText(
+              text: TextSpan(
+                text: "\$ 2.00",
+                style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black),
+              ),
+              textAlign: TextAlign.left))
+    ], 10);
+    await SunmiPrinter.printCustomText(PrinterCustomText(
+        text: TextSpan(
+          text: "* Bebida: Soda",
+          style: TextStyle(
+              fontSize: 16, fontWeight: FontWeight.w700, color: Colors.black),
+        ),
+        textAlign: TextAlign.left));
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -78,9 +141,22 @@ class _MyAppState extends State<MyApp> {
           children: <Widget>[
             SizedBox(height: 50),
             Center(
-              child: RaisedButton(
-                onPressed: _print,
-                child: const Text('Print demo', style: TextStyle(fontSize: 20)),
+              child: Column(
+                children: [
+                  RaisedButton(
+                    onPressed: _print,
+                    child: const Text('Print demo',
+                        style: TextStyle(fontSize: 20)),
+                  ),
+                  SizedBox(
+                    height: 20,
+                  ),
+                  RaisedButton(
+                    onPressed: _customPrint,
+                    child: const Text('Print demo 2',
+                        style: TextStyle(fontSize: 20)),
+                  ),
+                ],
               ),
             ),
           ],
