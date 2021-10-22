@@ -173,7 +173,7 @@ class SunmiPrinter {
 
     List<int> imageListInt = imageUint8List.cast<int>();
     String imageString = base64.encode(imageListInt);
-    image(imageString);
+    await image(imageString);
   }
 
   static PrinterCustomWidget customText(PrinterCustomText customPrint) {
