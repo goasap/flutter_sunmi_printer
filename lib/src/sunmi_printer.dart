@@ -143,22 +143,24 @@ class SunmiPrinter {
   }
 
   //CUSTOM TEXT STYLE
-  static Future<void> niceHr() async {
+  static Future<void> niceHr({double size = 5}) async {
     final recorder = PictureRecorder();
     final canvas = Canvas(recorder);
 
     final paintBackground = Paint()
       ..style = PaintingStyle.fill
       ..color = const Color(0xFFFFFFFF);
-    canvas.drawRect(const Rect.fromLTWH(0, 0, paperWidth, 12), paintBackground);
+    canvas.drawRect(
+        Rect.fromLTWH(0, 0, paperWidth, size.toInt() + 2), paintBackground);
     final linePaint = Paint()
-      ..strokeWidth = 5
+      ..strokeWidth = size
       ..color = Colors.black;
 
-    canvas.drawLine(const Offset(0, 5), const Offset(paperWidth, 5), linePaint);
+    canvas.drawLine(Offset(0, size), Offset(paperWidth, size), linePaint);
 
     final picture = recorder.endRecording();
-    await _printImage(PrinterCustomWidget(picture: picture, height: 10));
+    await _printImage(
+        PrinterCustomWidget(picture: picture, height: size.toInt() + 2));
   }
 
   static Future<void> _printImage(PrinterCustomWidget customImage) async {
