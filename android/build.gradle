@@ -45,7 +45,7 @@ android {
 
 dependencies{
     implementation(name: 'payLib', ext: 'aar')
-    implementation 'com.sunmi:printerlibrary:1.0.9'
+    implementation 'com.sunmi:printerlibrary:1.0.23'
     // https://mvnrepository.com/artifact/com.google.zxing/core
     compileOnly(name: 'core-3.4.0', ext: 'jar')
 }
